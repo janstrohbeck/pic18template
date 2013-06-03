@@ -31,20 +31,59 @@
 #include "types.h"
 #include "PIC18init.h"
 #include "PIC18hardware.h"
-#include <delays.h>
+#include "utils.h"
 
-#pragma config WDT=OFF
+// Takt auf 40 Mhz festlegen 
 #pragma config OSC=HSPLL
+// Watchdog ausschalten
+#pragma config WDT=OFF
+
+// Uncomment the wanted test functionality as needed
+//#define EGGTIMER
+//#define BLINK
+//#define AMPEL
+
+#ifdef EGGTIMER
+#include "eggtimer.h"
+#endif
+
+#ifdef AMPEL
+#include "ampel.h"
+#endif
 
 void main (void)
 {
-    // Initalize the PIC
+    // PIC initialisieren
     hw_init ();
 
+    // Millisekundenticker
+    uint32_t u32msTicker = 0;
+
+#ifdef EGGTIMER
+    EggTimerInit ();
+#endif
+#ifdef BLINK
+    LED (LEDGREEN, ENABLED);
+    LED (LEDYELLOW, ENABLED);
+    LED (LEDRED, ENABLED);
+    LED (LEDGREEN, ON);
+    LED (LEDYELLOW, OFF);
+    LED (LEDRED, ON);
+#endif
     while (TRUE)
     {
-        // Do amazing stuff here
-        Delay10KTCYx ( 100 );
+#ifdef EGGTIMER
+        u8UpdateMsTicker (& u32msTicker);
+        EggTimer (& u32msTicker);
+#endif
+#ifdef BLINK
+        LED (LEDGREEN, TOGGLE);
+        LED (LEDYELLOW, TOGGLE);
+        LED (LEDRED, TOGGLE);
+#endif
+#ifdef AMPEL
+        ampel ();
+#endif
     }
 }
 /** @} */

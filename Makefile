@@ -62,7 +62,7 @@ $(OUT_DIR)/$(OBJ_DIR_NAME)/%.p1 : $(SRC_DIR)/%.c $(INC_DIR)/*.h
 # re-link if any object file changed
 $(OUT_DIR)/$(PROJECT).hex:  $(OBJECTS)
 	$(DIR_GUARD)
-	$(CC) $(OBJECTS) -O$@ $(DEFINES) $(PICFLAG) $(OPT)
+	$(CC) $(OBJECTS) $(CFLAGS) -O$@ $(DEFINES) $(PICFLAG) $(OPT)
 	
 # delete all built files so you can start from scratch. 
 clean:

@@ -1,5 +1,5 @@
-_main: CODE, 32712 0 26
-__initialization: CODE, 32678 0 4
-_hw_init: CODE, 32738 0 30
-_Delay10KTCYx: CODE, 32688 0 24
-Total: 84
+_main: CODE, 1750 0 28
+__initialization: CODE, 1778 0 4
+_hw_init: CODE, 1720 0 30
+_afp1d15sin_table: SMALLCONST, 1536 0 182
+Total: 244

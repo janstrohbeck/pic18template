@@ -1,13 +1,13 @@
-/** @defgroup types Typedefines
- *  Defines all the types we are going to need in the project.
+/** @defgroup sin Lookup-Sinus
+ *  This module contains a function calculating the sinus of a given angle.
  *  @{
  */
 /**
  * @file
  * @author Jan Strohbeck
  * @version 1.0
- * @date 2013-05-23
- * @brief Defines all the types we are going to need in the project.
+ * @date 2013-06-03
+ * @brief Lookup-Sinus
  */
 /* Copyright (C) 
  * 2013 - Jan Strohbeck
@@ -26,23 +26,32 @@
  * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * 
  */
-#ifndef TYPES_H
-#define TYPES_H
+
+#ifndef SIN_H
+#define SIN_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <stdint.h>
-typedef char c8_t;
-/* #define TRUE 1 */
-/* #define FALSE 0 */
-/* typedef enum _bool {FALSE=0,TRUE} bool; */
-typedef int16_t fp1d15_t;
+#include "types.h"
+
+/**
+ * Sinus Funktion with Lookup-Table
+ * 
+ * Calculates the Sinus of a given angle using a Lookup-Table. <br />
+ * The Lookup-Table is defined only for 0 <= phi <= 90 Degrees.
+ * 
+ * @param i16phi The angle in degrees.
+ * @return The sinus of the angle in 16-Bit-Integer representation. Divide
+ * by 2**15 to get the value in floating point representation.
+ */
+fp1d15_t fp1d15sin (int16_t i16phi);
 
 #ifdef __cplusplus
 }
 #endif
 
-#endif /* TYPES_H */
+#endif /* SIN_H */
+
 /** @} */
