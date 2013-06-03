@@ -51,13 +51,13 @@
 
 void main (void)
 {
-    // PIC initialisieren
+    // Initialize PIC
     hw_init ();
 
-    // Millisekundenticker
+#ifdef EGGTIMER
+    // Eleapsed milliseconds
     uint32_t u32msTicker = 0;
 
-#ifdef EGGTIMER
     EggTimerInit ();
 #elif defined BLINK
     LED (LEDGREEN, ENABLED);
@@ -79,6 +79,7 @@ void main (void)
 #elif defined AMPEL
         ampel ();
 #endif
+        // Do amazing stuff here...
     }
 }
 /** @} */
