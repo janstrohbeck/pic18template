@@ -45,9 +45,8 @@
 
 #ifdef EGGTIMER
 #include "eggtimer.h"
-#endif
 
-#ifdef AMPEL
+#elif defined AMPEL
 #include "ampel.h"
 #endif
 
@@ -61,8 +60,7 @@ void main (void)
 
 #ifdef EGGTIMER
     EggTimerInit ();
-#endif
-#ifdef BLINK
+#elif defined BLINK
     LED (LEDGREEN, ENABLED);
     LED (LEDYELLOW, ENABLED);
     LED (LEDRED, ENABLED);
@@ -75,13 +73,11 @@ void main (void)
 #ifdef EGGTIMER
         u8UpdateMsTicker (& u32msTicker);
         EggTimer (& u32msTicker);
-#endif
-#ifdef BLINK
+#elif defined BLINK
         LED (LEDGREEN, TOGGLE);
         LED (LEDYELLOW, TOGGLE);
         LED (LEDRED, TOGGLE);
-#endif
-#ifdef AMPEL
+#elif defined AMPEL
         ampel ();
 #endif
     }
