@@ -33,19 +33,18 @@
 #include "PIC18hardware.h"
 #include "utils.h"
 
-// Takt auf 40 Mhz festlegen 
+// Set CPU Frequency to 40 Mhz
 #pragma config OSC=HSPLL
-// Watchdog ausschalten
+// Turn off Watchdog
 #pragma config WDT=OFF
 
-// Uncomment the wanted test functionality as needed
+// Uncomment the wanted test functionality as needed (one at a time)
 //#define EGGTIMER
 //#define BLINK
 //#define AMPEL
 
 #ifdef EGGTIMER
 #include "eggtimer.h"
-
 #elif defined AMPEL
 #include "ampel.h"
 #endif
