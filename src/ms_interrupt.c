@@ -59,7 +59,7 @@ void EggTimerInit ()
     T1CONbits.TMR1ON = 1;    // Activate Timer1
     T1CONbits.TMR1CS = 0;    // Use internal Clock
     T1CONbits.T1OSCEN = 0;   // Deactivate Timer1 Oscillator
-    T1CONbits.T1CKPS = 0;    // Turn off Prescaler
+    T1CONbits.T1CKPS = 0b10; // Prescale to 1/4 
     T1CONbits.T1RD16 = 0;    // Read timer as 2*8bit
 
     // Activate Pull-Up-Restistors at PORTB
