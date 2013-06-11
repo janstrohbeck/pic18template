@@ -50,7 +50,7 @@ void ampel (void)
     LED (LEDRED, OFF);
 
     // Activate Pull-Up-Resistors for PORTB
-    INTCON2 &= ~(1<<7);
+    INTCON2bits.RBPU = 0;
 
     // Is the Button pressed?
     if ( state == 0 && !(INPPORT & (1<<INP)) )
