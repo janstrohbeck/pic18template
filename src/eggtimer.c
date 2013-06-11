@@ -37,7 +37,8 @@ uint8_t u8UpdateMsTicker (uint32_t *pu32ticker)
     // Reference Value for the Timer
     static uint16_t i16referenz = 0;
     // Current Value of the Timer
-    uint16_t u16counter = (TMR1L | (TMR1H << 8));
+    uint16_t u16counter = TMR1L;
+    u16counter |= (TMR1H << 8);
 
     // Stepped over Reference Time?
     if ((int16_t) (i16referenz - u16counter) < 0)
@@ -60,10 +61,10 @@ void EggTimerInit ()
     T1CONbits.TMR1CS = 0;    // Use internal Clock
     T1CONbits.T1OSCEN = 0;   // Deactivate Timer1 Oscillator
     T1CONbits.T1CKPS = 0;    // Turn off Prescaler
-    T1CONbits.T1RD16 = 0;    // Read timer as 2*8bit
+    T1CONbits.T1RD16 = 1;    // Enable TMR1H Buffer Register
 
     // Activate Pull-Up-Restistors at PORTB
-    INTCON2 &= (1<<7);       
+    INTCON2bits.RBPU = 0;       
 
     // Configure LEDs
     LED (LEDGREEN, ENABLED);
@@ -92,7 +93,12 @@ void EggTimer (uint32_t *pu32ticker)
             {
                 // If one minute has eleapsed, go to the next state
                 if (*pu32ticker > 0 && *pu32ticker % 60000 == 0)
+                {
                     u8state ++;
+                    LED (LEDGREEN, OFF);
+                    LED (LEDRED, OFF);
+                    LED (LEDYELLOW, OFF);
+                }
 
                 // Toggle/Switch on LEDs accoring to state
                 switch (u8state)
