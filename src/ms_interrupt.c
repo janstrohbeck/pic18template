@@ -1,4 +1,4 @@
-/** @addtogroup eggtimer
+/** @addtogroup ms_interrupt
  *  @{
  */
 /**
@@ -6,7 +6,7 @@
  * @author Jan Strohbeck
  * @version 1.0
  * @date 2013-05-29
- * @brief Eggtimer Module
+ * @brief Millisecond Ticker using Interrupts
  */
 /* Copyright (C) 
  * 2013 - Jan Strohbeck
@@ -27,113 +27,97 @@
  */
 
 #include <p18cxxx.h>
-#include "eggtimer.h"
+#include "PIC18hardware.h"
+#include "ms_interrupt.h"
 #include "types.h"
 #include "utils.h"
-#include "PIC18hardware.h"
 
-uint8_t u8UpdateMsTicker (uint32_t *pu32ticker)
+void msInterruptInit (void)
 {
-    // Reference Value for the Timer
-    static uint16_t i16referenz = 0;
-    // Current Value of the Timer
-    uint16_t u16counter = (TMR1L | (TMR1H << 8));
+    RCONbits.IPEN = 1;       // Disable PIC16 Compatibility mode
 
-    // Stepped over Reference Time?
-    if ((int16_t) (i16referenz - u16counter) < 0)
+#ifndef INT_DEBUG
+    // Configure Timer1 Interrupts
+    IPR1bits.TMR1IP = 0;     // Set Timer1 Interrupt as low priority
+    PIE1bits.TMR1IE = 1;     // Enable Timer1 Interrupt on Overflow
+#else
+    // Configure Timer3 for testing purposes
+    T3CONbits.TMR3CS = 0;    // Use internal Clock
+    T3CONbits.T3CKPS = 0;    // Turn off Prescaler
+    T3CONbits.T3RD16 = 1;    // Enable TMR3H Buffer Register
+    IPR2bits.TMR3IP = 1;     // Timer3 Interrupt is high priority
+    PIE2bits.TMR3IE = 1;     // Enable Timer3 Interrupt
+    T3CONbits.TMR3ON = 1;    // Activate Timer3
+
+    PIE1bits.TMR1IE = 0;     // Disable Timer1 Interrupts
+#endif
+
+    // Finally enable Interrupts
+    INTCONbits.GIEL = 1;     // Globally enable low priority interrupts
+    INTCONbits.GIEH = 1;     // Globally enable high priority interrupts
+
+#ifndef INT_DEBUG
+    // Pre-Set Timer1-Value
+    uint16_t u16new = -10000;
+    // Write Value to Timer (High byte first)
+    TMR1H = u16new >> 8;
+    TMR1L = u16new;
+#else
+    // Pre-Set Timer3-Value
+    uint16_t u16new = -10000;
+    // Write Value to Timer (High byte first)
+    TMR3H = u16new >> 8;
+    TMR3L = u16new;
+#endif
+}
+
+void interrupt high_priority high_interrupt (void)
+{
+#ifdef INT_DEBUG
+    // If Timer3 Interrupt Flag is set
+    if (PIR2bits.TMR3IF)
     {
-        // Increment Millisecond Ticker
-        (*pu32ticker)++;
-        // Set Reference Value to 10000 x 100ns = 1ms into the future
-        i16referenz = u16counter + 0x2710;
-        // Ticker has been incremented
-        return 1;
+        // One millisecond has passed -> Increment Millisecond Counter
+        u32msTicker++;
+        // get current Timer1 count (read low byte first)
+        uint16_t u16counter = TMR3L;
+        // Then read the high byte (from the latch)
+        u16counter |= (TMR3H << 8);
+        // calculate new value for the Timer
+        uint16_t u16new = u16counter - 10000
+                          + 19; // Manual adjust
+        // Write Value to Timer (high byte first -> Latch)
+        TMR3H = u16new >> 8;
+        TMR3L = u16new;
+
+        // Finally clear Timer3 interrupt flag
+        PIR2bits.TMR3IF = 0;
     }
-    // Ticker has not been incremented
-    return 0;
-} // u8UpdateMsTicker
+#endif
+}
 
-void EggTimerInit ()
+void interrupt low_priority low_interrupt (void)
 {
-    // Configure Timer
-    T1CONbits.TMR1ON = 1;    // Activate Timer1
-    T1CONbits.TMR1CS = 0;    // Use internal Clock
-    T1CONbits.T1OSCEN = 0;   // Deactivate Timer1 Oscillator
-    T1CONbits.T1CKPS = 0b10; // Prescale to 1/4 
-    T1CONbits.T1RD16 = 0;    // Read timer as 2*8bit
-
-    // Activate Pull-Up-Restistors at PORTB
-    INTCON2 &= (1<<7);       
-
-    // Configure LEDs
-    LED (LEDGREEN, ENABLED);
-    LED (LEDRED, ENABLED);
-    LED (LEDYELLOW, ENABLED);
-    LED (LEDGREEN, OFF);
-    LED (LEDRED, OFF);
-    LED (LEDYELLOW, OFF);
-} // EggTimerInit
-
-void EggTimer (uint32_t *pu32ticker)
-{
-    // Egg Timer state
-    static uint8_t u8state = 0;
-    // Dummy variable to prevent multiple toggling during the same millisecond
-    static uint8_t u8toggled = 0;
-
-    // Not during idle state
-    if (u8state != 0)
+#ifndef INT_DEBUG
+    // If Timer1 Interrupt Flag is set
+    if (PIR1bits.TMR1IF)
     {
-        // Has one second eleapsed?
-        if (*pu32ticker % 1000 == 0)
-        {
-            // If it hasn't been toggled yet
-            if (!u8toggled)
-            {
-                // If one minute has eleapsed, go to the next state
-                if (*pu32ticker > 0 && *pu32ticker % 60000 == 0)
-                    u8state ++;
+        // One millisecond has passed -> Increment Millisecond Counter
+        u32msTicker++;
+        // get current Timer1 count (read low byte first)
+        uint16_t u16counter = TMR1L;
+        // Then read the high byte (from the latch)
+        u16counter |= (TMR1H << 8);
+        // calculate new valuew for the Timer
+        uint16_t u16new = u16counter - 10000
+                          + 19; // Manual adjust
+        // Write Value to Timer (high byte first -> Latch)
+        TMR1H = u16new >> 8;
+        TMR1L = u16new;
 
-                // Toggle/Switch on LEDs accoring to state
-                switch (u8state)
-                {
-                    case 1:
-                        LED (LEDRED, TOGGLE);
-                        LED (LEDYELLOW, ON);
-                        LED (LEDGREEN, ON);
-                        break;
-                    case 2:
-                        LED (LEDRED, OFF);
-                        LED (LEDYELLOW, TOGGLE);
-                        LED (LEDGREEN, ON);
-                        break;
-                    case 3:
-                        LED (LEDRED, OFF);
-                        LED (LEDYELLOW, OFF);
-                        LED (LEDGREEN, TOGGLE);
-                        break;
-                    case 4:
-                        LED (LEDRED, TOGGLE);
-                        LED (LEDYELLOW, TOGGLE);
-                        LED (LEDGREEN, TOGGLE);
-                        break;
-                    case 5:
-                    default:
-                        // Back to idle state
-                        u8state = 0;
-                        break;
-                }
-                // LED have been toggled/switched on
-                u8toggled = 1;
-            }
-        }
-        else
-            // Make it possible to toggle/switch again
-            u8toggled = 0;
+        // Finally clear Timer1 interrupt flag
+        PIR1bits.TMR1IF = 0;
     }
-    // Button RB4 pressed?
-    else if (! (PORTB & (1<<4)))
-        // Start the Sequence
-        u8state = 1;
-} // EggTimer
+#endif
+}
 /** @} */

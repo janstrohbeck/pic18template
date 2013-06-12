@@ -1,5 +1,12 @@
-_main: CODE, 1764 0 12
-__initialization: CODE, 1750 0 4
-_hw_init: CODE, 1720 0 30
+_high_interrupt: CODE, 8 0 2646
+_LED: CODE, 2306 0 176
+_main: CODE, 3012 0 58
+_u8UpdateMsTicker: CODE, 2918 0 94
+__initialization: CODE, 3100 0 12
+_hw_init: CODE, 3070 0 30
+_EggTimer: CODE, 1720 0 586
+_low_interrupt: CODE, 24 0 138
+_EggTimerInit: CODE, 2654 0 136
+___llmod: CODE, 2790 0 128
 _afp1d15sin_table: SMALLCONST, 1536 0 182
-Total: 228
+Total: 4186

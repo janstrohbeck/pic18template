@@ -40,11 +40,18 @@
 
 // Uncomment the wanted test functionality as needed (one at a time)
 //#define EGGTIMER
+#define EGGTIMER_INTERRUPT
 //#define BLINK
 //#define AMPEL
 
 #ifdef EGGTIMER
 #include "eggtimer.h"
+#elif defined EGGTIMER_INTERRUPT
+#include "eggtimer.h"
+#include "ms_interrupt.h"
+
+volatile uint32_t u32msTicker = 0;
+
 #elif defined AMPEL
 #include "ampel.h"
 #endif
@@ -54,11 +61,14 @@ void main (void)
     // Initialize PIC
     hw_init ();
 
-#ifdef EGGTIMER
+#if defined EGGTIMER || defined INT_DEBUG
     // Eleapsed milliseconds
-    uint32_t u32msTicker = 0;
+    uint32_t u32msTicker2 = 0;
 
     EggTimerInit ();
+#elif defined EGGTIMER_INTERRUPT
+    EggTimerInit ();
+    msInterruptInit ();
 #elif defined BLINK
     LED (LEDGREEN, ENABLED);
     LED (LEDYELLOW, ENABLED);
@@ -70,8 +80,13 @@ void main (void)
     while (TRUE)
     {
 #ifdef EGGTIMER
-        u8UpdateMsTicker (& u32msTicker);
-        EggTimer (& u32msTicker);
+        u8UpdateMsTicker (& u32msTicker2);
+        EggTimer (& u32msTicker2);
+#elif defined EGGTIMER_INTERRUPT
+    #ifdef INT_DEBUG
+        u8UpdateMsTicker (& u32msTicker2);
+    #endif
+        EggTimer ((uint32_t *) (& u32msTicker));
 #elif defined BLINK
         LED (LEDGREEN, TOGGLE);
         LED (LEDYELLOW, TOGGLE);
