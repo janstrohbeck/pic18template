@@ -1,12 +1,13 @@
-_high_interrupt: CODE, 8 0 2646
-_LED: CODE, 2306 0 176
-_main: CODE, 3012 0 58
-_u8UpdateMsTicker: CODE, 2918 0 94
-__initialization: CODE, 3100 0 12
-_hw_init: CODE, 3070 0 30
-_EggTimer: CODE, 1720 0 586
-_low_interrupt: CODE, 24 0 138
-_EggTimerInit: CODE, 2654 0 136
-___llmod: CODE, 2790 0 128
-_afp1d15sin_table: SMALLCONST, 1536 0 182
-Total: 4186
+_msInterruptInit: CODE, 2020 0 60
+_timer_interrupt: CODE, 1794 0 122
+_high_interrupt: CODE, 8 0 2012
+_LED: CODE, 1086 0 252
+_main: CODE, 2080 0 46
+__initialization: CODE, 2126 0 24
+_hw_init: CODE, 2160 0 30
+_EggTimer: CODE, 170 0 916
+_low_interrupt: CODE, 24 0 142
+_EggTimerInit: CODE, 1574 0 220
+___llmod: CODE, 1338 0 236
+_afp1d15sin_table: MEDIUMCONST, 32402 0 364
+Total: 4424

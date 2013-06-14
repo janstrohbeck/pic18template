@@ -36,44 +36,49 @@ void msInterruptInit (void)
 {
     RCONbits.IPEN = 1;       // Disable PIC16 Compatibility mode
 
-#ifndef INT_DEBUG
-    // Configure Timer1 Interrupts
-    IPR1bits.TMR1IP = 0;     // Set Timer1 Interrupt as low priority
-    PIE1bits.TMR1IE = 1;     // Enable Timer1 Interrupt on Overflow
-#else
-    // Configure Timer3 for testing purposes
+#if TIMER_INTERRUPT == 1
+    // Configure Timer3
     T3CONbits.TMR3CS = 0;    // Use internal Clock
     T3CONbits.T3CKPS = 0;    // Turn off Prescaler
     T3CONbits.T3RD16 = 1;    // Enable TMR3H Buffer Register
-    IPR2bits.TMR3IP = 1;     // Timer3 Interrupt is high priority
+    IPR2bits.TMR3IP = TIMER_PRIORITY; // Set Timer3 Priority
     PIE2bits.TMR3IE = 1;     // Enable Timer3 Interrupt
     T3CONbits.TMR3ON = 1;    // Activate Timer3
-
-    PIE1bits.TMR1IE = 0;     // Disable Timer1 Interrupts
+    PIE1bits.TMR1IE = 0;     // Disable Timer1 Interrupt
+#elif TIMER_INTERRUPT == 0
+    // Configure Timer1
+    T1CONbits.TMR1CS = 0;    // Use internal Clock
+    T1CONbits.T1CKPS = 0;    // Turn off Prescaler
+    T1CONbits.T1OSCEN = 0;   // Deactivate Timer1 Oscillator
+    T1CONbits.T1RD16 = 1;    // Enable TMR1H Buffer Register
+    IPR1bits.TMR1IP = TIMER_PRIORITY; // Set Timer1 Priority
+    PIE1bits.TMR1IE = 1;     // Enable Timer1 Interrupt on Overflow
+    T1CONbits.TMR1ON = 1;    // Activate Timer1
+    PIE2bits.TMR3IE = 0;     // Disable Timer3 Interrupt
 #endif
 
     // Finally enable Interrupts
     INTCONbits.GIEL = 1;     // Globally enable low priority interrupts
     INTCONbits.GIEH = 1;     // Globally enable high priority interrupts
 
-#ifndef INT_DEBUG
-    // Pre-Set Timer1-Value
-    uint16_t u16new = -10000;
-    // Write Value to Timer (High byte first)
-    TMR1H = u16new >> 8;
-    TMR1L = u16new;
-#else
+#if TIMER_INTERRUPT == 1
     // Pre-Set Timer3-Value
     uint16_t u16new = -10000;
     // Write Value to Timer (High byte first)
     TMR3H = u16new >> 8;
     TMR3L = u16new;
+#elif TIMER_INTERRUPT == 0
+    // Pre-Set Timer1-Value
+    uint16_t u16new = -10000;
+    // Write Value to Timer (High byte first)
+    TMR1H = u16new >> 8;
+    TMR1L = u16new;
 #endif
 }
 
-void interrupt high_priority high_interrupt (void)
+inline void timer_interrupt (void)
 {
-#ifdef INT_DEBUG
+#if TIMER_INTERRUPT == 1
     // If Timer3 Interrupt Flag is set
     if (PIR2bits.TMR3IF)
     {
@@ -93,12 +98,7 @@ void interrupt high_priority high_interrupt (void)
         // Finally clear Timer3 interrupt flag
         PIR2bits.TMR3IF = 0;
     }
-#endif
-}
-
-void interrupt low_priority low_interrupt (void)
-{
-#ifndef INT_DEBUG
+#elif TIMER_INTERRUPT == 0
     // If Timer1 Interrupt Flag is set
     if (PIR1bits.TMR1IF)
     {

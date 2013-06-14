@@ -1,7 +1,7 @@
-/** @defgroup ms_interrupt
+/** @defgroup ms_interrupt Millisecond Ticker using Interrupts
  *  This module contains functions to create a millisecond ticker using
  *  Interrupts. It can either use Timer1 or Timer3 as a time source, depending
- *  on if the INT_DEBUG flag is set or not.
+ *  on if the INT_TIMER flag is set or not.
  *  @{
  */
 /**
@@ -35,7 +35,12 @@
 extern "C" {
 #endif
 
-#define INT_DEBUG
+/// Controls which Timer is used (0: Timer1, 1: Timer3,
+/// other: Disables Timer Interrupts completely).
+#define TIMER_INTERRUPT 0
+/// Sets Timer Interrupt Polarity (0: Low, 1: High,
+/// other: Disables Timer Interrupts completely).
+#define TIMER_PRIORITY 0
 
 #include "types.h"
 
@@ -52,12 +57,14 @@ extern volatile uint32_t u32msTicker;
 void msInterruptInit (void);
 
 /**
- * General handler function for low-priority interrupts.
+ * Timer Interrupt Handler function.
+ *
+ * This function has to be called by the ISR. It increments our
+ * Millisecond Ticker by one and sets the new Timer value to -10000
+ * (minus 1 Millisecond).
  * 
- * Handles interrupts by looking up which functionality caused
- * the interrupt.
  */
-void interrupt low_priority low_interrupt (void);
+inline void timer_interrupt (void);
 
 #ifdef __cplusplus
 }

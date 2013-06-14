@@ -33,11 +33,26 @@
 extern "C" {
 #endif
 
-#include <stdint.h>
-typedef char c8_t;
+// #include <stdint.h>
+/// 8-Bit Integer (int)
+typedef int int8_t;
+/// 16-Bit Integer (long int)
+typedef long int int16_t;
+/// 32-Bit Integer (long long int)
+typedef long long int int32_t;
+/// unsigned 8-Bit-Integer (unsigned int)
+typedef unsigned int uint8_t;
+/// unsigned 16-Bit-Integer (unsigned long int)
+typedef unsigned long int uint16_t;
+/// unsigned 32-Bit-Integer (unsigned long int)
+typedef unsigned long long int uint32_t;
+/// 8-Bit character (signed char)
+typedef signed char c8_t;
 /* #define TRUE 1 */
 /* #define FALSE 0 */
-/* typedef enum _bool {FALSE=0,TRUE} bool; */
+/// Boolean data type
+typedef enum _bool {false=0, true=1} bool;
+/// 16-Bit "Floating Point" Data Type (signed long int)
 typedef int16_t fp1d15_t;
 
 #ifdef __cplusplus

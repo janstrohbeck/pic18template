@@ -1,5 +1,6 @@
 /** @defgroup main Main Program
- *  This module contains the main function.
+ *  This module contains the main function. Wanted functionality can
+ *  be enabled using defines (see source code).
  *  @{
  */
 /**
@@ -38,38 +39,50 @@
 // Turn off Watchdog
 #pragma config WDT=OFF
 
-// Uncomment the wanted test functionality as needed (one at a time)
-//#define EGGTIMER
-#define EGGTIMER_INTERRUPT
-//#define BLINK
-//#define AMPEL
+/// Use Eggtimer Module
+#define EGGTIMER 1
+/// Use a timer as a time source (0: None, 1: Polling, 2: Interrupts)
+#define TICKER_TIME_SOURCE 2
+/// Implement some blinking LEDs
+#define BLINK 0
+/// Implement the Traffic Light
+#define AMPEL 0
 
-#ifdef EGGTIMER
-#include "eggtimer.h"
-#elif defined EGGTIMER_INTERRUPT
-#include "eggtimer.h"
+#if TICKER_TIME_SOURCE == 2
 #include "ms_interrupt.h"
-
-volatile uint32_t u32msTicker = 0;
-
-#elif defined AMPEL
-#include "ampel.h"
 #endif
 
+/// Millisecond Counter
+volatile uint32_t u32msTicker = 0;
+
+#if EGGTIMER || TICKER_TIME_SOURCE == 1
+#include "eggtimer.h"
+#endif
+
+#if AMPEL
+#include "ampel.h"
+#if TICKER_TIME_SOURCE == 0
+#include <delays.h>
+#endif
+#endif
+
+/**
+ * Main Function.
+ * 
+ * This is the entry point for our program.
+ */
 void main (void)
 {
     // Initialize PIC
     hw_init ();
 
-#if defined EGGTIMER || defined INT_DEBUG
-    // Eleapsed milliseconds
-    uint32_t u32msTicker2 = 0;
-
+#if EGGTIMER || TICKER_TIME_SOURCE == 1
     EggTimerInit ();
-#elif defined EGGTIMER_INTERRUPT
-    EggTimerInit ();
+#endif
+#if TICKER_TIME_SOURCE == 2
     msInterruptInit ();
-#elif defined BLINK
+#endif
+#if BLINK
     LED (LEDGREEN, ENABLED);
     LED (LEDYELLOW, ENABLED);
     LED (LEDRED, ENABLED);
@@ -77,24 +90,36 @@ void main (void)
     LED (LEDYELLOW, OFF);
     LED (LEDRED, ON);
 #endif
-    while (TRUE)
+#if AMPEL && TICKER_TIME_SOURCE != 0
+    uint32_t u32reference = 100;
+#endif
+
+    while (true)
     {
-#ifdef EGGTIMER
-        u8UpdateMsTicker (& u32msTicker2);
-        EggTimer (& u32msTicker2);
-#elif defined EGGTIMER_INTERRUPT
-    #ifdef INT_DEBUG
-        u8UpdateMsTicker (& u32msTicker2);
-    #endif
+#if TICKER_TIME_SOURCE == 1
+        u8UpdateMsTicker (& u32msTicker);
+#endif
+#if EGGTIMER
         EggTimer ((uint32_t *) (& u32msTicker));
-#elif defined BLINK
+#endif
+#if BLINK
         LED (LEDGREEN, TOGGLE);
         LED (LEDYELLOW, TOGGLE);
         LED (LEDRED, TOGGLE);
-#elif defined AMPEL
-        ampel ();
 #endif
-        // Do amazing stuff here...
+#if AMPEL
+#if TICKER_TIME_SOURCE != 0
+        if ((int32_t)(u32msTicker - u32reference) >= 0)
+        {
+            ampel ();
+            u32reference += 100;
+        }
+#else
+        ampel ();
+        Delay10KTCYx (100);
+#endif
+#endif
+        // Enter other stuff here...
     }
 }
 /** @} */
